@@ -6,20 +6,27 @@ export const Meals: CollectionConfig = {
     read: () => true,
     create: () => true,
   },
+  admin: {
+    useAsTitle: 'name'
+  },
   fields: [
     {
       name: 'name',
       type: 'text',
+      unique: true,
       required: true,
+      index: true,
+      // validate: value => Boolean(value) || 'This field is required',
     },
     {
       name: 'ingredients',
       type: 'array',
       fields: [
         {
-          name: 'name',
-          type: 'text',
+          name: 'ingredient',
+          type: 'relationship',
           required: true,
+          relationTo: 'ingredients',
         },
         {
           name: 'amount',

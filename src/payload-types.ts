@@ -14,6 +14,7 @@ export interface Config {
     users: User;
     media: Media;
     meals: Meal;
+    ingredients: Ingredient;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -23,6 +24,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     meals: MealsSelect<false> | MealsSelect<true>;
+    ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -104,11 +106,22 @@ export interface Meal {
   name: string;
   ingredients?:
     | {
-        name: string;
+        ingredient: number | Ingredient;
         amount: number;
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients".
+ */
+export interface Ingredient {
+  id: number;
+  name: string;
+  staple?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -130,6 +143,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'meals';
         value: number | Meal;
+      } | null)
+    | ({
+        relationTo: 'ingredients';
+        value: number | Ingredient;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -215,10 +232,20 @@ export interface MealsSelect<T extends boolean = true> {
   ingredients?:
     | T
     | {
-        name?: T;
+        ingredient?: T;
         amount?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients_select".
+ */
+export interface IngredientsSelect<T extends boolean = true> {
+  name?: T;
+  staple?: T;
   updatedAt?: T;
   createdAt?: T;
 }

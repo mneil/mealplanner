@@ -1,8 +1,11 @@
 import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
+// import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
-import { fileURLToPath } from 'url'
+// import { fileURLToPath } from 'url'
+import Form from 'next/form'
+import Autocomplete from './components/AutoComplete'
+
 
 import config from '@/payload.config'
 import './styles.css'
@@ -13,7 +16,7 @@ export default async function HomePage() {
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers })
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  // const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
 
   const meals = await payload.find({
     collection: 'meals',
@@ -24,9 +27,17 @@ export default async function HomePage() {
 
   return (
     <div className="home">
+      <header>
+        {!user && <p>Welcome to your new project.</p>}
+        {user && <p>Welcome back, {user.email}</p>}
+      </header>
       <div className="content">
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
+        <Form action="/search">
+          {/* On submission, the input value will be appended to
+              the URL, e.g. /search?query=abc */}
+          <Autocomplete suggestions={meals.docs.map((meal) => meal.name)} />
+          <button type="submit">Submit</button>
+        </Form>
         <ul>
           {mealList}
         </ul>

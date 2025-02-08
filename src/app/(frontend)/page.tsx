@@ -1,11 +1,7 @@
 import { headers as getHeaders } from 'next/headers.js'
-// import Image from 'next/image'
-import { getPayload } from 'payload'
+import { getPayload, DataFromCollectionSlug } from 'payload'
 import React from 'react'
-// import { fileURLToPath } from 'url'
-import Form from 'next/form'
-import Autocomplete from './components/AutoComplete'
-
+import MealFinder from './components/MealFinder'
 
 import config from '@/payload.config'
 import './styles.css'
@@ -16,14 +12,19 @@ export default async function HomePage() {
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers })
 
-  // const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
-
-  const meals = await payload.find({
-    collection: 'meals',
-  });
-  const mealList = meals.docs.map((meal) => {
-    return(<li key={meal.id}>{meal.name}</li>)
-  })
+  async function getAllMeals(page?: number): Promise<DataFromCollectionSlug<'meals'>[]> {
+    const res = await payload.find({
+      collection: 'meals',
+      limit: 1000,
+      page,
+    })
+    let meals = res.docs
+    if (res.hasNextPage && res.nextPage) {
+      meals = meals.concat(await getAllMeals(res.nextPage))
+    }
+    return meals
+  }
+  const meals = await getAllMeals()
 
   return (
     <div className="home">
@@ -32,45 +33,17 @@ export default async function HomePage() {
         {user && <p>Welcome back, {user.email}</p>}
       </header>
       <div className="content">
-        <Form action="/search">
-          {/* On submission, the input value will be appended to
-              the URL, e.g. /search?query=abc */}
-          <Autocomplete suggestions={meals.docs.map((meal) => meal.name)} />
-          <button type="submit">Submit</button>
-        </Form>
-        <ul>
-          {mealList}
-        </ul>
-        {/* <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-
-        <div className="links">
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
-          </a>
-        </div> */}
+        <MealFinder meals={meals} />
       </div>
       <div className="footer">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
+        <a
+          className="admin"
+          href={payloadConfig.routes.admin}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Go to admin panel
+        </a>
       </div>
     </div>
   )

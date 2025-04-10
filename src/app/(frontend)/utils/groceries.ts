@@ -1,23 +1,33 @@
 import { DataFromCollectionSlug, BasePayload } from 'payload'
 
-type DataIngredient = DataFromCollectionSlug<'groceries'>
+type DataIngredient = DataFromCollectionSlug<'ingredients'>
 
 export interface Ingredient {
-  ingredient: number | DataIngredient
+  ingredient: DataIngredient
   amount: number
   id?: string | null
 }
 
-export function split(groceries: DataIngredient) {
-  const needGroceries: DataIngredient[] = []
-  const checkGroceries: DataIngredient[] = []
+export type GroceryHash = { [key: string]: Ingredient }
+
+function maybeAddAmount(g: GroceryHash, n: Ingredient) {
+  if (!g[n.ingredient.name]) {
+    g[n.ingredient.name] = n
+  } else {
+    g[n.ingredient.name].amount = g[n.ingredient.name].amount + n.amount
+  }
+}
+
+export function split(groceries: Ingredient[]) {
+  const needGroceries: { [key: string]: Ingredient } = {}
+  const checkGroceries: { [key: string]: Ingredient } = {}
   groceries.forEach((item) => {
     const i = item.ingredient as DataIngredient
     if (i.staple) {
-      checkGroceries.push(i)
+      maybeAddAmount(checkGroceries, item)
       return
     }
-    needGroceries.push(i)
+    maybeAddAmount(needGroceries, item)
   })
   return {
     needGroceries,

@@ -11,11 +11,15 @@ export interface Ingredient {
 export type GroceryHash = { [key: string]: Ingredient }
 
 function maybeAddAmount(g: GroceryHash, n: Ingredient) {
-  if (!g[n.ingredient.name]) {
-    g[n.ingredient.name] = n
-  } else {
-    g[n.ingredient.name].amount = g[n.ingredient.name].amount + n.amount
+  const newIngredient = {
+    ingredient: n.ingredient,
+    amount: n.amount,
+    id: n.id,
   }
+  if (g[n.ingredient.name]) {
+    newIngredient.amount += g[n.ingredient.name].amount
+  }
+  g[n.ingredient.name] = newIngredient
 }
 
 export function split(groceries: Ingredient[]) {

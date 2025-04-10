@@ -61,15 +61,25 @@ const MealFinder = ({ props, meals }: MealFinderProps) => {
   const [inputValue, setInputValue] = React.useState('')
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+  const updateMealsAndGroceries = (newMealList: DataFromCollectionSlug<'meals'>[]) => {
+    setMealList(newMealList)
+    setGroceries(
+      split(newMealList.reduce((n, o) => n.concat(o.ingredients! || []), [] as Ingredient[])),
+    )
+  }
+
+  const handleDelete = (index: number) => {
+    const newMealList = [...mealList]
+    newMealList.splice(index, 1)
+    updateMealsAndGroceries(newMealList)
+  }
+
   const onChange = (evt: React.SyntheticEvent<Element, Event>, suggestion: Suggestion | null) => {
     if (!suggestion) return
     const meal = meals.find((m) => m.id === Number(suggestion.id))
     if (!meal) return
     const newMealList = [...mealList, meal]
-    setMealList(newMealList)
-    setGroceries(
-      split(newMealList.reduce((n, o) => n.concat(o.ingredients! || []), [] as Ingredient[])),
-    )
+    updateMealsAndGroceries(newMealList)
     setTimeout(() => {
       setInputValue('')
     }, 1)
@@ -138,67 +148,77 @@ const MealFinder = ({ props, meals }: MealFinderProps) => {
             />
           </FormControl>
         </Grid>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 2 }}>
-        {mealList.map((meal, i) => (
-          <Card key={i} variant="outlined" size="sm">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography level="title-md">{meal.name}</Typography>
-                {/* <Typography level="body-sm">2.4GB</Typography> */}
-              </Box>
-              <Dropdown>
-                <MenuButton variant="plain" size="sm" sx={{ maxWidth: '32px', maxHeight: '32px' }}>
-                  <IconButton component="span" variant="plain" color="neutral" size="sm">
-                    <MoreVertRoundedIcon />
-                  </IconButton>
-                </MenuButton>
-                <Menu
-                  placement="bottom-end"
-                  size="sm"
-                  sx={{
-                    zIndex: '99999',
-                    p: 1,
-                    gap: 1,
-                    '--ListItem-radius': 'var(--joy-radius-sm)',
-                  }}
-                >
-                  <MenuItem sx={{ textColor: 'danger.500' }}>
-                    <EditRoundedIcon />
-                    Edit
-                  </MenuItem>
-                  <MenuItem sx={{ textColor: 'danger.500' }}>
-                    <DeleteRoundedIcon color="danger" />
-                    Delete
-                  </MenuItem>
-                </Menu>
-              </Dropdown>
-            </Box>
-            <CardOverflow
-              sx={{
-                borderBottom: '1px solid',
-                borderTop: '1px solid',
-                borderColor: 'neutral.outlinedBorder',
-              }}
-            >
-              <AspectRatio
-                ratio="16/9"
-                color="primary"
-                sx={{ borderRadius: 0, color: 'primary.plainColor' }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <InsertDriveFileRoundedIcon />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 2,
+          }}
+        >
+          {mealList.map((meal, i) => (
+            <Card key={i} variant="outlined" size="sm">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography level="title-md">{meal.name}</Typography>
+                  {/* <Typography level="body-sm">2.4GB</Typography> */}
                 </Box>
-              </AspectRatio>
-            </CardOverflow>
-            <Typography level="body-xs">{days[i]}</Typography>
-          </Card>
-        ))}
+                <Dropdown>
+                  <MenuButton
+                    variant="plain"
+                    size="sm"
+                    sx={{ maxWidth: '32px', maxHeight: '32px' }}
+                  >
+                    <IconButton component="span" variant="plain" color="neutral" size="sm">
+                      <MoreVertRoundedIcon />
+                    </IconButton>
+                  </MenuButton>
+                  <Menu
+                    placement="bottom-end"
+                    size="sm"
+                    sx={{
+                      zIndex: '99999',
+                      p: 1,
+                      gap: 1,
+                      '--ListItem-radius': 'var(--joy-radius-sm)',
+                    }}
+                  >
+                    <MenuItem sx={{ textColor: 'danger.500' }}>
+                      <EditRoundedIcon />
+                      Edit
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDelete(i)} sx={{ textColor: 'danger.500' }}>
+                      <DeleteRoundedIcon color="danger" />
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                </Dropdown>
+              </Box>
+              <CardOverflow
+                sx={{
+                  borderBottom: '1px solid',
+                  borderTop: '1px solid',
+                  borderColor: 'neutral.outlinedBorder',
+                }}
+              >
+                <AspectRatio
+                  ratio="16/9"
+                  color="primary"
+                  sx={{ borderRadius: 0, color: 'primary.plainColor' }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <InsertDriveFileRoundedIcon />
+                  </Box>
+                </AspectRatio>
+              </CardOverflow>
+              <Typography level="body-xs">{days[i]}</Typography>
+            </Card>
+          ))}
         </Box>
       </Box>
       <Sheet
